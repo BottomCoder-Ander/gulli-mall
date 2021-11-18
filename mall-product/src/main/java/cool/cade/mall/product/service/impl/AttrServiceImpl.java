@@ -1,12 +1,16 @@
 package cool.cade.mall.product.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.UpdateChainWrapper;
+import com.fasterxml.jackson.databind.util.BeanUtil;
 import cool.cade.mall.product.dao.AttrAttrgroupRelationDao;
 import cool.cade.mall.product.dao.AttrGroupDao;
 import cool.cade.mall.product.dao.CategoryDao;
 import cool.cade.mall.product.entity.AttrAttrgroupRelationEntity;
 import cool.cade.mall.product.entity.AttrGroupEntity;
 import cool.cade.mall.product.entity.CategoryEntity;
-import cool.cade.mall.product.vo.AttrRespVo;
+import cool.cade.mall.product.service.CategoryService;
+import cool.cade.mall.product.vo.AttrRespVO;
 import cool.cade.mall.product.vo.AttrVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +44,9 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
 
     @Autowired
     CategoryDao categoryDao;
+
+    @Autowired
+    CategoryService categoryService;
 
 
     @Override
@@ -84,8 +91,8 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         PageUtils pageUtils = new PageUtils(page);
 
         List<AttrEntity> records = page.getRecords();
-        List<AttrRespVo> respVOs = records.stream().map(attrEntity -> {
-            AttrRespVo attrRespVo = new AttrRespVo();
+        List<AttrRespVO> respVOs = records.stream().map(attrEntity -> {
+            AttrRespVO attrRespVo = new AttrRespVO();
             BeanUtils.copyProperties(attrEntity, attrRespVo);
             AttrAttrgroupRelationEntity attrId = attrAttrgroupRelationDao.selectOne(
                 new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_id", attrEntity.getAttrId()
@@ -106,4 +113,60 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         return pageUtils;
     }
 
+    /**
+     * 得到属性信息，除了AttrEntity信息外，还有组ID，组名和类别名
+     * 组ID可以通过属性和分组关联表查到，根据ID去属性分组表找组名
+     * 而类别名根据类别ID去类别表找
+     * @param attrId
+     * @return
+     */
+    @Override
+    public AttrRespVO getAttrInfo(Long attrId) {
+        AttrRespVO attrRespVO = new AttrRespVO();
+        AttrEntity attrEntity = this.getById(attrId);
+        BeanUtils.copyProperties(attrEntity, attrRespVO);
+
+        AttrAttrgroupRelationEntity attrAttrgroupRelationEntity = attrAttrgroupRelationDao.selectOne(
+            new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_id", attrId)
+        );
+        // 分组信息
+        if(attrAttrgroupRelationEntity != null) {
+            attrRespVO.setAttrGroupId(attrAttrgroupRelationEntity.getAttrGroupId());
+            AttrGroupEntity attrGroupEntity = attrGroupDao.selectById(attrAttrgroupRelationEntity.getAttrGroupId());
+            if(attrGroupEntity != null) {
+                attrRespVO.setGroupName(attrGroupEntity.getAttrGroupName());
+            }
+        }
+        // 分类信息
+        Long catelogId = attrEntity.getCatelogId();
+        Long[] catelogPath = categoryService.findCatelogPathById(catelogId);
+        attrRespVO.setCatelogPath(catelogPath);
+
+        CategoryEntity categoryEntity = categoryDao.selectById(catelogId);
+        if (categoryEntity != null) {
+            attrRespVO.setCatelogName(categoryEntity.getName());
+        }
+
+        return attrRespVO;
+    }
+    @Transactional
+    @Override
+    public void updateAttr(AttrRespVO attr) {
+        AttrEntity attrEntity = new AttrEntity();
+        BeanUtils.copyProperties(attr, attrEntity);
+        this.updateById(attrEntity);
+
+        AttrAttrgroupRelationEntity attrAttrgroupRelationEntity = new AttrAttrgroupRelationEntity();
+        attrAttrgroupRelationEntity.setAttrGroupId(attr.getAttrGroupId());
+        attrAttrgroupRelationEntity.setAttrId(attr.getAttrId());
+
+        Integer count = attrAttrgroupRelationDao.selectCount(
+            new QueryWrapper<AttrAttrgroupRelationEntity>().eq("att_id", attr.getAttrId()));
+        if(count > 0) {
+            attrAttrgroupRelationDao.update(attrAttrgroupRelationEntity,
+                new UpdateWrapper<AttrAttrgroupRelationEntity>().eq("attr_id", attr.getAttrId()));
+        } else{
+            attrAttrgroupRelationDao.insert(attrAttrgroupRelationEntity);
+        }
+    }
 }
