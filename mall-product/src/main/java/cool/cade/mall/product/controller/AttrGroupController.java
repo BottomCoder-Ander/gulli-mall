@@ -1,16 +1,16 @@
 package cool.cade.mall.product.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import cool.cade.mall.product.entity.AttrEntity;
+import cool.cade.mall.product.service.AttrService;
 import cool.cade.mall.product.service.CategoryService;
+import cool.cade.mall.product.vo.AttrGroupRelationVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import cool.cade.mall.product.entity.AttrGroupEntity;
 import cool.cade.mall.product.service.AttrGroupService;
@@ -34,6 +34,16 @@ public class AttrGroupController {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private AttrService attrService;
+
+    @GetMapping("/{attrGroupId}/attr/relation")
+    public R attrRelation(@PathVariable("attrGroupId") Long attrGroupId){
+        List<AttrEntity> entities = attrService.getRelationAttr(attrGroupId);
+        return R.ok().put("data", entities);
+    }
+
     /**
      * 列表
      */
@@ -98,4 +108,10 @@ public class AttrGroupController {
         return R.ok();
     }
 
+    @PostMapping("/attr/relation/delete")
+    public R deleteRelation(@RequestBody AttrGroupRelationVO[] vos){
+        attrService.deleteRelation(vos);
+
+        return R.ok();
+    }
 }

@@ -3,9 +3,11 @@ package cool.cade.mall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import cool.cade.mall.common.utils.PageUtils;
 import cool.cade.mall.product.entity.AttrEntity;
+import cool.cade.mall.product.vo.AttrGroupRelationVO;
 import cool.cade.mall.product.vo.AttrRespVO;
 import cool.cade.mall.product.vo.AttrVO;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,5 +29,9 @@ public interface AttrService extends IService<AttrEntity> {
     void updateAttr(AttrRespVO attr);
 
     PageUtils queryBaseAttrPage(Map<String, Object> params, Long catelogId, String type);
+
+    List<AttrEntity> getRelationAttr(Long attrGroupId);
+
+    void deleteRelation(AttrGroupRelationVO[] vos);
 }
 

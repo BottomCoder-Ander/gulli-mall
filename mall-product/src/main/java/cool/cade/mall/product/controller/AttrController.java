@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import cool.cade.mall.product.vo.AttrGroupRelationVO;
 import cool.cade.mall.product.vo.AttrRespVO;
 import cool.cade.mall.product.vo.AttrVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,7 @@ public class AttrController {
 
         return R.ok();
     }
+
 
     /**
      * 修改
