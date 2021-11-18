@@ -1,0 +1,9 @@
+# Project exclude paths
+/mal-ware/target/
+/mall-common/target/
+/mall-coupon/target/
+/mall-gateway/target/
+/mall-member/target/
+/mall-order/target/
+/mall-product/target/
+/mall-third-parity/target/

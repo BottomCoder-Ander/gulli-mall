@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: mall-coupon
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.31.93:8848
+        group: gulimall
+      config:
+        server-addr: 192.168.31.93:8848
+        file-extension: yaml
+        namespace: gulimall
+        group: dev
+# 默认会去取名字叫application-name的配置
+#        name: mall-gateway
+

@@ -1,0 +1,39 @@
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowCredentials: true    #跨域要加上这些才行
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+        - id: actuator_route
+          uri: http://127.0.0.1:88/actuator
+          predicates:
+            - Path=/actuator
+
+        - id: nacos_route
+          uri: http://192.168.31.93:8848/nacos
+          predicates:
+            - Path=/nacos
+
+
+management:
+  server:
+    servlet:
+      context-path: /
+  # health是否显示细节，可选never,always,when-authenticated
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    # 公开所有端点，默认只有端点/health和/info端点是暴露的，可以通过include和exclude进行包括和排除
+    web:
+      exposure:
+        include: *
+      exclude: env
+
+server:
+  port: 88
