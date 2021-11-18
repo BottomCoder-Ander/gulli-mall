@@ -1,6 +1,8 @@
 package cool.cade.mall.product.service.impl;
 
+import cool.cade.mall.product.service.CategoryBrandRelationService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -15,10 +17,14 @@ import cool.cade.mall.common.utils.Query;
 import cool.cade.mall.product.dao.CategoryDao;
 import cool.cade.mall.product.entity.CategoryEntity;
 import cool.cade.mall.product.service.CategoryService;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
+
+    @Autowired
+    CategoryBrandRelationService categoryBrandRelationService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -95,6 +101,17 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         ArrayList<Long> paths = new ArrayList<Long>();
         findParentPath(catelogId, paths);
         return (Long[]) paths.toArray();
+    }
+
+    /**
+     * 级联更新所有关联的数据
+     * @param category
+     */
+    @Transactional
+    @Override
+    public void updateCascade(CategoryEntity category) {
+        this.updateById(category);
+        categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
     }
 
     private void findParentPath(Long catelogId, List<Long> paths){

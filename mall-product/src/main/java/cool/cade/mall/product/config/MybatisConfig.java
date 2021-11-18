@@ -11,9 +11,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @date 2021/11/18 - 16:34
  */
 @Configuration
-@EnableTransactionManagement //开启事务，多查询要开启事务
+@EnableTransactionManagement //开启全局事务管理，只有开启这个，Transactional注解才有用
 @MapperScan("cool.cade.mall.product.dao")
 public class MybatisConfig {
+
+    // 查询一般不加事务，即使幻读，也不是什么大事
     @Bean
     public PaginationInnerInterceptor paginationInnerInterceptor(){
         PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor();

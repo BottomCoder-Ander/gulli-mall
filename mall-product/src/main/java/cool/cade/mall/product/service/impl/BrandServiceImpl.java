@@ -1,6 +1,8 @@
 package cool.cade.mall.product.service.impl;
 
+import cool.cade.mall.product.service.CategoryBrandRelationService;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -16,6 +18,8 @@ import cool.cade.mall.product.service.BrandService;
 
 @Service("brandService")
 public class BrandServiceImpl extends ServiceImpl<BrandDao, BrandEntity> implements BrandService {
+    @Autowired
+    CategoryBrandRelationService categoryBrandRelationService;
 
     /**
      * 根据id以及key进行搜索
@@ -36,6 +40,20 @@ public class BrandServiceImpl extends ServiceImpl<BrandDao, BrandEntity> impleme
         );
 
         return new PageUtils(page);
+    }
+
+    /**
+     * 保存品牌，并保证其他表冗余字段的一致性
+     * @param brand
+     */
+    @Override
+    public void updateDetail(BrandEntity brand) {
+        this.updateById(brand);
+        if(!StringUtils.isEmpty(brand.getName())) {
+            categoryBrandRelationService.updateBrand(brand.getBrandId(),brand.getName());
+//            TODO:更新其他关联信息
+        }
+
     }
 
 }
