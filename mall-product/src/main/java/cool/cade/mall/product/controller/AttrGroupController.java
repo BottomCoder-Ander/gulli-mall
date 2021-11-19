@@ -5,10 +5,14 @@ import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.fasterxml.jackson.databind.util.BeanUtil;
+import cool.cade.mall.product.entity.AttrAttrgroupRelationEntity;
 import cool.cade.mall.product.entity.AttrEntity;
+import cool.cade.mall.product.service.AttrAttrgroupRelationService;
 import cool.cade.mall.product.service.AttrService;
 import cool.cade.mall.product.service.CategoryService;
 import cool.cade.mall.product.vo.AttrGroupRelationVO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +41,16 @@ public class AttrGroupController {
 
     @Autowired
     private AttrService attrService;
+
+    @Autowired
+    AttrAttrgroupRelationService attrAttrgroupRelationService;
+
+    @PostMapping("/attr/relation")
+    public R addRelation(@RequestBody List<AttrGroupRelationVO> vos){
+
+        attrAttrgroupRelationService.saveBatch(vos);
+        return R.ok();
+    }
 
     @GetMapping("/{attrGroupId}/attr/relation")
     public R attrRelation(@PathVariable("attrGroupId") Long attrGroupId){
