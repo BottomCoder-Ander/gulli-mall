@@ -11,7 +11,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * @date 12/11/2021 - 00:18
  */
 @MapperScan("cool.cade.mall.member.dao")
-@EnableFeignClients(basePackages = "")
+// @EnableFeignClients(basePackages = "")
 @EnableDiscoveryClient
 @SpringBootApplication
 public class MallMemberApplication {
