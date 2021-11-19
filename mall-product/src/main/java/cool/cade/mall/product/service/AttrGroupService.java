@@ -3,7 +3,9 @@ package cool.cade.mall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import cool.cade.mall.common.utils.PageUtils;
 import cool.cade.mall.product.entity.AttrGroupEntity;
+import cool.cade.mall.product.vo.AttrGroupWithAttrsVO;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,5 +20,6 @@ public interface AttrGroupService extends IService<AttrGroupEntity> {
     PageUtils queryPage(Map<String, Object> params);
     PageUtils queryPage(Map<String, Object> params, Long catlogId);
 
+    List<AttrGroupWithAttrsVO> getAttrGroupWithAttrsByCatelogId(Long catelogId);
 }
 
