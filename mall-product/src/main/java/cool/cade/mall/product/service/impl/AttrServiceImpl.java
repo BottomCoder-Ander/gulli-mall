@@ -14,6 +14,7 @@ import cool.cade.mall.product.service.CategoryService;
 import cool.cade.mall.product.vo.AttrGroupRelationVO;
 import cool.cade.mall.product.vo.AttrRespVO;
 import cool.cade.mall.product.vo.AttrVO;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +36,7 @@ import cool.cade.mall.product.dao.AttrDao;
 import cool.cade.mall.product.entity.AttrEntity;
 import cool.cade.mall.product.service.AttrService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 
 @Service("attrService")
@@ -134,7 +136,8 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         List<AttrAttrgroupRelationEntity> entities = attrAttrgroupRelationDao.selectList(
             new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_group_id", attrGroupId)
         );
-        if(entities == null) return null;
+
+        if(CollectionUtils.isEmpty(entities)) return null;
         List<Long> attrIds = entities.stream().map(attr -> attr.getAttrId()).collect(Collectors.toList());
 
         Collection<AttrEntity> attEntities = this.listByIds(attrIds);
@@ -151,6 +154,53 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
             return attrAttrgroupRelationEntity;
         }).collect(Collectors.toList());
         attrAttrgroupRelationDao.deleteBatchRelation(entities);
+    }
+
+    /**
+     * 获取当前分组没有关联的所有属性
+     * @param params
+     * @param attrGroupId
+     * @return
+     */
+    @Override
+    public PageUtils getNoRelationAttr(Map<String, Object> params, Long attrGroupId) {
+        AttrGroupEntity attrGroupEntity = attrGroupDao.selectById(attrGroupId);
+        Long catelogId = attrGroupEntity.getCatelogId();
+
+        List<AttrGroupEntity> group = attrGroupDao.selectList(
+            new QueryWrapper<AttrGroupEntity>().eq("catelog_id", catelogId)
+        );
+
+        List<Long> collect = group.stream().map(item -> {
+            return item.getAttrGroupId();
+        }).collect(Collectors.toList());
+
+       // 得到分组关联的属性
+        List<AttrAttrgroupRelationEntity> groupId = attrAttrgroupRelationDao.selectList(
+            new QueryWrapper<AttrAttrgroupRelationEntity>().in("attr_group_id", collect)
+        );
+
+        List<Long> attrIds = groupId.stream().map(item -> {
+            return item.getAttrId();
+        }).collect(Collectors.toList());
+
+       // 从当前分类的所有属性中移除这些属性
+        QueryWrapper<AttrEntity> wrapper = new QueryWrapper<AttrEntity>()
+            .eq("catelog_id", catelogId)
+            .eq("atr_type", ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
+
+        if(attrIds != null && attrIds.size() > 0){
+            wrapper.notIn("attr_id", attrIds);
+        }
+        String key = (String) params.get("key");
+        if(!StringUtils.isEmpty(key)) {
+            wrapper.and((w) -> {
+                w.eq("attr_id", key).or().like("attr_name", key);
+            });
+        }
+        IPage<AttrEntity> page = this.page(new Query<AttrEntity>().getPage(params), wrapper);
+
+        return new PageUtils(page);
     }
 
     /**
